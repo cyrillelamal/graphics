@@ -10,11 +10,16 @@ OPERATIONS = {
 
 
 class GUI:
+    WIDTH = 220
+    HEIGHT = 250
+
     def __init__(self):
         self.__main_window = Tk()
         self.__main_window.title('ЛР №1. Косыгин К.С.')
+        self.__main_window.geometry(f'{GUI.WIDTH}x{GUI.HEIGHT}')
         self._build_base_interface()
         self._bind_defaults()
+        self._add_copyright()
 
     def _build_base_interface(self):
         # Frame with input fields
@@ -27,36 +32,35 @@ class GUI:
         self._frame_output = Frame(self.__main_window)
         self._frame_output.pack()
 
-        # Labels and entries
-        Label(self._frame_input, text='Le nombre a').pack()
+        # Labels and entries :: Frame with input fields
+        Label(self._frame_input, text='Le nombre a:').grid(row=0)
         self._entry_num_a = Entry(self._frame_input)
-        self._entry_num_a.pack()
-        Label(self._frame_input, text='Le nombre b').pack()
+        self._entry_num_a.grid(row=0, column=1, padx=5, pady=5)
+        Label(self._frame_input, text='Le nombre b:').grid(row=1)
         self._entry_num_b = Entry(self._frame_input)
-        self._entry_num_b.pack()
+        self._entry_num_b.grid(row=1, column=1, padx=5, pady=5)
 
-        # Buttons with operations
+        # Buttons with operations :: Frame with input buttons
         self._button_plus = Button(self._frame_button, text='+')
-        self._button_plus.grid(row=1, column=1, sticky=NW)
-        self._button_plus.pack()
+        self._button_plus.grid(row=0, column=0, padx=10, pady=10)
         self._button_minus = Button(self._frame_button, text='-')
-        self._button_minus.grid(row=1, column=2, sticky=NE)
-        self._button_minus.pack()
+        self._button_minus.grid(row=0, column=1, padx=10, pady=10)
         self._button_multiply = Button(self._frame_button, text='x')
-        self._button_multiply.grid(row=2, column=1, sticky=SW)
-        self._button_multiply.pack()
+        self._button_multiply.grid(row=1, column=0, padx=10, pady=10)
         self._button_divide = Button(self._frame_button, text='/')
-        self._button_divide.grid(row=2, column=2, sticky=SE)
-        self._button_divide.pack()
+        self._button_divide.grid(row=1, column=1, padx=10, pady=10)
 
         # Result
         self._result_label = Label(self.__main_window, text='Le résultat')
         self._result_label.pack()
 
+    def _add_copyright(self):
+        Label(self.__main_window, text='Косыгин К.С. ИВТ 1.2').pack()
+
     def _bind_defaults(self):
-        for k, v in self.__dict__.items():
-            if k.startswith('_button_'):
-                v.bind('<Button-1>', self.calculate)
+        for prop, item in self.__dict__.items():
+            if prop.startswith('_button_'):
+                item.bind('<Button-1>', self.calculate)
 
     def calculate(self, event):
         """Calculate and display"""
