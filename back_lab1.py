@@ -51,8 +51,9 @@ class GUI:
         self._button_divide.grid(row=1, column=1, padx=10, pady=10)
 
         # Result
-        self._result_label = Label(self.__main_window, text='Le résultat')
-        self._result_label.pack()
+        self._result_entry = Entry(self.__main_window)
+        self._result_entry.configure(state='disabled')
+        self._result_entry.pack()
 
     def _add_copyright(self):
         Label(self.__main_window, text='Косыгин К.С. ИВТ 1.2').pack()
@@ -70,7 +71,11 @@ class GUI:
 
         result = OPERATIONS[btn_txt](a, b)
 
-        self._result_label['text'] = result
+        print('ss', result)
+        self._result_entry.configure(state='normal')
+        self._result_entry.delete(first=0, last=END)
+        self._result_entry.insert(END, result)
+        self._result_entry.configure(state='disabled')
 
     def start_loop(self):
         self.__main_window.mainloop()
