@@ -1,174 +1,173 @@
-from inspect import signature
 import tkinter as tk
 
 
-NUM_OF_STEPS = 100  # Function
+# Canvas parameters
+CANVAS_WIDTH = 320
+CANVAS_HEIGHT = 240
 
-SCALE = (10, 10)  # Pixels scale
+X_SCALE = 8
+Y_SCALE = 8
 
-EC_WIDTH = 320
-EC_HEIGHT = 240
+AXIS_BIAS = 5
+
+NUM_OF_STEPS = 10**3  # For function
 
 
-def example_parabola(x, a=1, b=0, c=0) -> float:
-    """Return function value for passed"""
+# Counted constants
+MID_X = CANVAS_WIDTH // 2
+MID_Y = CANVAS_HEIGHT // 2
+
+
+def func(x, a, b, c):
+    """Parabola function"""
     return a * x**2 + b * x + c
 
 
-class CanvasForGraphic:
-    """Should be used as mixin"""
-    def __init__(self, frame, width, height, func, scale=None, axis_bias=5):
-        self.frame = frame
-
-        self.width = width
-        self.height = height
-
-        self.scale = (1, 1) if scale is None else scale
-
-        self.axis_bias = axis_bias
-        self.axis_width = 2
-
-        self._center_x = width // 2
-        self._center_y = height // 2
-
-        self.func = func
-
-        self._append_canvas()
-
-    def _append_canvas(self):
-        c = tk.Canvas(self.frame, width=self.width, height=self.height)
-        c.pack()
-        self._canvas = c
-
-    def draw_axis(self):
-        """Draw x and y axis"""
-        c = getattr(self, '_canvas')
-
-        # X axis
-        x_l = self.axis_bias
-        x_r = self.width - self.axis_bias
-        y = self._center_y
-        c.create_line(x_l, y, x_r, y, width=self.axis_width)
-        # Y axis
-        x = self._center_x
-        y_t = self.axis_bias
-        y_b = self.height - self.axis_bias
-        c.create_line(x, y_t, x, y_b, width=self.axis_width)
-
-    def draw_graphic(self, x_min, x_max, y_min=None, y_max=None):
-        """Draw the line forming graphic"""
-        self._canvas.delete('all')
-        self.draw_axis()
-
-        # Function step
-        h = (x_max - x_min) / NUM_OF_STEPS
-
-        # Center of the canvas
-        x_mid = self._center_x
-        y_mid = self._center_y
-
-        fx = x_min  # Functional x
-
-        x_scale, y_scale = self.scale
-
-        xp = x_mid + int(fx * x_scale)
-        yp = y_mid - int(self.func(fx) * y_scale)
-
-        while fx < x_max:
-            fx += h
-            xc = x_mid + int(fx * x_scale)
-            yc = y_mid - int(self.func(fx) * y_scale)
-            self._canvas.create_line(xp, yp, xc, yc, width=2)
-            xp = xc
-            yp = yc
-
-    def enclose(self, *args):
-        """Enclose the function bound to the instance with args"""
-        def curry(old_func):
-            sig = signature(old_func)
-            if len(sig.parameters) == 1:
-                return old_func
-
-            def new_func(x):
-                return old_func(x, *args)
-            return new_func
-        return curry(self.func)
+def clear(canvas: 'tk.Canvas'):
+    """Delete the content of the passed canvas"""
+    canvas.delete('all')
 
 
-class GUI:
-    LABEL_NAMES = ['A', 'B', 'C', 'x min', 'y min', 'x max', 'y max']
-    LABEL_PADDING = (3, 5)
+def draw_axis(canvas: 'tk.Canvas'):
+    """Draw axis on the passed canvas"""
+    center_x = CANVAS_WIDTH // 2
+    center_y = CANVAS_HEIGHT // 2
+    # X axis
+    xl = AXIS_BIAS
+    xr = CANVAS_WIDTH - AXIS_BIAS
+    y = center_y
+    canvas.create_line(xl, y, xr, y)
+    # Y axis
+    x = center_x
+    yt = AXIS_BIAS
+    yb = CANVAS_HEIGHT - AXIS_BIAS
+    canvas.create_line(x, yt, x, yb)
 
-    def __init__(self, title):
-        m = tk.Tk()
-        m.title(title)
-        self.__master = m
 
-        self._build_interface()
-        self._bind_actions()
+def get_users_input():
+    params = {}
+    try:
+        params['a'] = float(entry_a.get())
+        params['b'] = float(entry_b.get())
+        params['c'] = float(entry_c.get())
 
-    def _build_interface(self):
-        """Frames in the main window"""
-        m = self.__master
-        fe = tk.Frame(m)  # Frame with entries
-        fe.pack()
-        setattr(self, '_frame_entries', fe)
-        fb = tk.Frame(m)  # Frame with button
-        fb.pack()
-        setattr(self, '_frame_button', fb)
-        fc = tk.Frame(m)
-        fc.pack()
-        setattr(self, '_frame_canvas', fc)
+        params['x_min'] = float(entry_x_min.get())
+        params['x_max'] = float(entry_x_max.get())
+    except ValueError:
+        show_errors(canvas, 'Некорректные значения')
 
-        # Entries
-        padx, pady = GUI.LABEL_PADDING  # Const padding
-        ln = GUI.LABEL_NAMES
-        for label, row in zip(ln, range(len(ln))):
-            tk.Label(fe, text=label).grid(row=row, column=0, padx=padx, pady=pady)
+    y_min = entry_y_min.get()
+    y_max = entry_y_max.get()
+    if y_min != '':
+        params['y_min'] = y_min
+    if y_max != '':
+        params['y_max'] = y_max
 
-            entry_name = '_entry_' + label.replace(' ', '_').lower()
-            e = tk.Entry(fe)
-            e.grid(row=row, column=1)
-            setattr(self, entry_name, e)
+    return params
 
-        # Button
-        self._button = tk.Button(fb, text='Dessiner')
-        self._button.pack()
 
-        # Canvas
-        self._canvas = CanvasForGraphic(
-            fc,
-            EC_WIDTH, EC_HEIGHT,
-            example_parabola,
-            scale=SCALE
-        )
-        self._canvas.draw_axis()
+def show_errors(canvas: 'tk.Canvas', msg: str):
+    canvas.delete('all')
+    canvas.create_text(MID_X, MID_Y, text=msg)
 
-    def _bind_actions(self):
-        self._button.bind('<Button-1>', self._redraw)
 
-    def _redraw(self, event):  # When 'redraw' button is pressed
-        """Redraw"""
-        user_input = self.get_user_input()
-        canvas = self._canvas
-        a = user_input.pop('a')
-        b = user_input.pop('b')
-        c = user_input.pop('c')
+def draw_graphic(params: dict):
+    x_max = params.get('x_max')
+    x_min = params.get('x_min')
+    a = params.get('a')
+    b = params.get('b')
+    c = params.get('c')
 
-        # Make closure with default function
-        canvas.enclose(a, b, c)
-        canvas.draw_graphic(**user_input)
+    y_min = params.get('y_min')
+    y_max = params.get('y_max')
 
-    def get_user_input(self) -> dict:
-        """Read inputs"""
-        return {
-            'a': float(getattr(self, '_entry_a').get()),
-            'b': float(getattr(self, '_entry_b').get()),
-            'c': float(getattr(self, '_entry_c').get()),
-            'x_min': float(getattr(self, '_entry_x_min').get()),
-            'x_max': float(getattr(self, '_entry_x_max').get()),
-            # y_max, y_min, etc
-        }
+    h = (x_max - x_min) / NUM_OF_STEPS  # literally dx
 
-    def start_loop(self):
-        self.__master.mainloop()
+    # Functional x
+    x = x_min
+
+    # Points
+    xp = MID_X + int(x * X_SCALE)
+    yp = MID_Y - int(func(x, a, b, c) * Y_SCALE)
+
+    x += h
+    while x < x_max:
+        y = func(x, a, b, c)
+
+        # Points
+        xc = MID_X + int(x * X_SCALE)
+        yc = MID_Y - int(y * Y_SCALE)
+
+        # There is y(min) and the current f(x) is lower than that minimum
+        # OR
+        # There is y(max) and the current f(x) is bigger than that maximum
+        if y_min is not None and y < float(y_min) or y_max is not None and y > float(y_max):
+            pass
+
+        else:  # No importance
+            canvas.create_line(xp, yp, xc, yc)
+
+        xp, yp = xc, yc
+        x += h
+
+
+def redraw(event):
+    """Clear, Draw axis, Get user's input, Draw graphic"""
+    # Clear
+    clear(canvas)
+    # Draw axis
+    draw_axis(canvas)
+    # Get user's input
+    users_input = get_users_input()
+    # Draw graphic
+    draw_graphic(users_input)
+
+
+MASTER = tk.Tk()
+MASTER.title('ЛР №3. Косыгин К.С.')
+
+fe = tk.Frame(MASTER)  # Frame with entries
+fb = tk.Frame(MASTER)  # Frame with button
+fc = tk.Frame(MASTER)  # Frame with canvas
+
+fe.pack()
+fb.pack()
+fc.pack()
+
+
+# Labels and entries
+tk.Label(fe, text='a').grid(row=0, column=0, padx=3, pady=5)
+entry_a = tk.Entry(fe)
+entry_a.grid(row=0, column=1)
+tk.Label(fe, text='b').grid(row=1, column=0, padx=3, pady=5)
+entry_b = tk.Entry(fe)
+entry_b.grid(row=1, column=1)
+tk.Label(fe, text='c').grid(row=2, column=0, padx=3, pady=5)
+entry_c = tk.Entry(fe)
+entry_c.grid(row=2, column=1)
+
+tk.Label(fe, text='x min').grid(row=3, column=0, padx=3, pady=5)
+entry_x_min = tk.Entry(fe)
+entry_x_min.grid(row=3, column=1)
+tk.Label(fe, text='x max').grid(row=4, column=0, padx=3, pady=5)
+entry_x_max = tk.Entry(fe)
+entry_x_max.grid(row=4, column=1)
+tk.Label(fe, text='y min').grid(row=5, column=0, padx=3, pady=5)
+entry_y_min = tk.Entry(fe)
+entry_y_min.grid(row=5, column=1)
+tk.Label(fe, text='y max').grid(row=6, column=0, padx=3, pady=5)
+entry_y_max = tk.Entry(fe)
+entry_y_max.grid(row=6, column=1)
+
+
+# Button
+button = tk.Button(fb, text='Dessiner')
+button.pack()
+button.bind('<Button-1>', redraw)
+
+
+# Canvas
+canvas = tk.Canvas(fc, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+canvas.pack()
+
+draw_axis(canvas)

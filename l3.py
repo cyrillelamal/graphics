@@ -1,5 +1,4 @@
-from back_lab3 import GUI
+from back_lab3 import MASTER
 
 
-g = GUI('ЛР №3. Косыгин К.С.')
-g.start_loop()
+MASTER.mainloop()
