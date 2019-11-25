@@ -2,15 +2,16 @@ import tkinter as tk
 
 
 from converter import d2s
+from axis import draw_axis
 
 
 # Canvas parameters
-WINDOW_SIZE = (320, 240)
+CANVAS_SIZE = (320, 240)
 AXIS_SCALE = (10, 10)  # Attention to d2s!!!
 
 SERIF_SIZE = 4
-AXIS_BIAS = 10
-ARROW_BIAS = 3
+AXIS_INDENT = 10
+ARROW_INDENT = 3
 
 NUM_OF_STEPS = 10**3  # For function
 
@@ -20,127 +21,12 @@ def func(x, a, b, c):
     return a * x**2 + b * x + c
 
 
-# REFLECTION MATRICES
-REFLECTIONS = {
-    'ry': [  # At y
-        (-1, 0),
-        (0, 1)
-    ],
-    'rx': [  # At x
-        (1, 0),
-        (0, -1)
-    ]
-}
-
-
 # Counted constants
-WIDTH, HEIGHT = WINDOW_SIZE
+WIDTH, HEIGHT = CANVAS_SIZE
 X_SCALE, Y_SCALE = AXIS_SCALE
 SERIF_MID = SERIF_SIZE // 2
 MID_X = WIDTH // 2
 MID_Y = HEIGHT // 2
-
-
-def matrix_mult2(m1, m2):
-    """Serif * matrix"""
-    a, b = m1[0]
-    c, d = m1[1]
-
-    e, f = m2[0]
-    g, h = m2[1]
-
-    return [
-        (a*e + b*g, a*f + b*h),
-        (c*e + d*g, c*f + d*h)
-    ]
-
-
-def draw_arrows():
-    """Draw arrows"""
-    x_line = [
-        WIDTH - AXIS_BIAS, MID_Y,
-        WIDTH - 2*AXIS_BIAS, MID_Y - ARROW_BIAS
-    ]
-    canvas.create_line(*x_line)
-    x_line[3] = MID_Y + ARROW_BIAS
-    canvas.create_line(*x_line)
-
-    y_line = [
-        MID_X, AXIS_BIAS,
-        MID_X - ARROW_BIAS, AXIS_BIAS*2
-    ]
-    canvas.create_line(*y_line)
-    y_line[2] = MID_X + ARROW_BIAS
-    canvas.create_line(*y_line)
-
-
-def draw_axis_names():
-    """Draw axis names"""
-    # X
-    x = WIDTH - int(1.5*AXIS_BIAS)
-    y = MID_Y - AXIS_BIAS
-    canvas.create_text(x, y, text='X')
-    # Y
-    x = MID_X + AXIS_BIAS
-    y = int(1.5*AXIS_BIAS)
-    canvas.create_text(x, y, text='Y')
-
-
-def draw_serifs(base_serif, reflection_type: str):
-    """Draw serifs. Reflection_type in REFLECTIONS"""
-    reflection_type = reflection_type.lower()
-    reflection_matrix = REFLECTIONS[reflection_type]
-
-    p1 = d2s(base_serif[0], WINDOW_SIZE, AXIS_SCALE)
-    p2 = d2s(base_serif[1], WINDOW_SIZE, AXIS_SCALE)
-
-    axis_bias = MID_X + X_SCALE  # Just loop parameter
-    while axis_bias < WIDTH - AXIS_BIAS * 2:
-        canvas.create_line(*p1, *p2)  # Draw first right serif
-
-        reflected_serif = matrix_mult2(base_serif, reflection_matrix)  # Left serif in Descartes
-        p1 = d2s(reflected_serif[0], WINDOW_SIZE, AXIS_SCALE)
-        p2 = d2s(reflected_serif[1], WINDOW_SIZE, AXIS_SCALE)
-        canvas.create_line(*p1, *p2)
-
-        # Cycle parameters
-        if reflection_type == 'ry':
-            axis_bias += X_SCALE
-            base_serif[0][0] += 1
-            base_serif[1][0] += 1
-        else:
-            axis_bias += Y_SCALE
-            base_serif[0][1] += 1
-            base_serif[1][1] += 1
-
-        p1 = d2s(base_serif[0], WINDOW_SIZE, AXIS_SCALE)
-        p2 = d2s(base_serif[1], WINDOW_SIZE, AXIS_SCALE)
-
-
-def draw_axis():
-    """Draw axis"""
-    draw_arrows()
-    draw_axis_names()
-    # X
-    xl = AXIS_BIAS
-    xr = WIDTH - AXIS_BIAS
-    y = MID_Y
-    canvas.create_line(xl, y, xr, y)
-    x_serif = [
-        [1, +0.2],  # First point
-        [1, -0.2]  # Second point
-    ]
-    draw_serifs(x_serif, 'ry')
-    # Y
-    x = MID_X
-    yt = AXIS_BIAS
-    yb = HEIGHT - AXIS_BIAS
-    canvas.create_line(x, yt, x, yb)
-    y_serif = [
-        [-0.2, 1],
-        [0.2, 1]
-    ]
-    draw_serifs(y_serif, 'rx')
 
 
 def get_users_input():
@@ -183,7 +69,7 @@ def draw_graphic(params: dict):
     y = func(x, a, b, c)
 
     # Graphical point
-    point1 = d2s((x, y), WINDOW_SIZE)
+    point1 = d2s((x, y), CANVAS_SIZE)
 
     # Count points for function nad convert them
     x += h
@@ -191,7 +77,7 @@ def draw_graphic(params: dict):
         y = func(x, a, b, c)
 
         # New screen point
-        point2 = d2s((x, y), WINDOW_SIZE)
+        point2 = d2s((x, y), CANVAS_SIZE)
 
         # There is y(min) and the current f(x) is lower than that minimum
         # OR
@@ -212,11 +98,12 @@ def redraw(event):
     # Clear
     canvas.delete('all')
     # Draw axis
-    draw_axis()
+    draw_axis(canvas, 2, CANVAS_SIZE, AXIS_INDENT, ARROW_INDENT, AXIS_SCALE)
     # Get user's input
     users_input = get_users_input()
     # Draw graphic
-    draw_graphic(users_input)
+    if event is not None:
+        draw_graphic(users_input)
 
 
 MASTER = tk.Tk()
@@ -264,7 +151,7 @@ button.bind('<Button-1>', redraw)
 # Canvas
 canvas = tk.Canvas(fc, width=WIDTH, height=HEIGHT)
 canvas.pack()
-draw_axis()
+draw_axis(canvas, 2, CANVAS_SIZE, AXIS_INDENT, ARROW_INDENT, AXIS_SCALE)
 
 
 MASTER.mainloop()

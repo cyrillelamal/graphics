@@ -26,23 +26,23 @@ def d2s(point: tuple, window_size: tuple, scale=None):
     return x, y
 
 
-def r2s(point, ):
-    """
-    Base:
-    x(s) = a*x(m) + b
-    y(s) = c*y(m) + d
-    x(min) <= x(m) <= x(max)
-    y(min) <= y(m) <= y(max)
-
-    Left-top point = (left, top)
-    Width and height of the area = (width, height)
-
-    x(s) = left + width/(x(max) - x(min) * (x(m) - x(min))
-    y(s) = top + height -  height/(y(max) - y(min)) * (y(m) - y(min))
-    """
-    if len(point) == 2:
-        x, y = point
-    elif len(point) == 3:
-        x, y, z = point
-    else:
-        return point
+# def r2s(point):
+#     """
+#     Base:
+#     x(s) = a*x(m) + b
+#     y(s) = c*y(m) + d
+#     x(min) <= x(m) <= x(max)
+#     y(min) <= y(m) <= y(max)
+#
+#     Left-top point = (left, top)
+#     Width and height of the area = (width, height)
+#
+#     x(s) = left + width/(x(max) - x(min) * (x(m) - x(min))
+#     y(s) = top + height -  height/(y(max) - y(min)) * (y(m) - y(min))
+#     """
+#     if len(point) == 2:
+#         x, y = point
+#     elif len(point) == 3:
+#         x, y, z = point
+#     else:
+#         return point
