@@ -1,3 +1,6 @@
+"""
+Parabola drawer
+"""
 import tkinter as tk
 
 

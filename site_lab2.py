@@ -1,3 +1,6 @@
+"""
+Triangle
+"""
 import tkinter as tk
 
 
