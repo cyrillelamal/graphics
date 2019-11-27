@@ -3,6 +3,7 @@ import numpy as np
 
 
 from converter import d2s
+from transformations import TRANSFORMATIONS
 
 
 AXIS_NAMES = ['x', 'y', 'z']
@@ -16,20 +17,6 @@ DEFAULT_AXIS_INDENT = 10
 DEFAULT_ARROW_INDENT = 3
 # Descartes to screen
 DEFAULT_AXIS_SCALE = (8, 8)
-
-
-TRANSFORMATIONS = {
-    # Reflect at y
-    'ry': [
-        (-1, 0),
-        (0, 1)
-    ],
-    # Reflect at x
-    'rx': [
-        (1, 0),
-        (0, -1)
-    ]
-}
 
 
 def draw_axis(
