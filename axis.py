@@ -2,8 +2,7 @@ import tkinter as tk
 import numpy as np
 
 
-from converter import d2s
-from transformations import TRANSFORMATIONS
+from converter import d2s, TRANSFORMATIONS
 
 
 AXIS_NAMES = ['x', 'y', 'z']

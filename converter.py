@@ -1,6 +1,19 @@
 BASE_SCALE = (8, 8)
 
-OLD_AXIS = (0, 0)
+
+# Affine transformations matrices
+TRANSFORMATIONS = {
+    # Reflect at y
+    'ry': [
+        (-1, 0),
+        (0, 1)
+    ],
+    # Reflect at x
+    'rx': [
+        (1, 0),
+        (0, -1)
+    ]
+}
 
 
 def d2s(point: tuple, window_size: tuple, scale=None):
@@ -24,17 +37,6 @@ def d2s(point: tuple, window_size: tuple, scale=None):
     y_mid = height // 2
     x = x_mid + int(x * xscale)
     y = y_mid - int(y * yscale)
-
-    return x, y
-
-
-def moved_axis(point: tuple, new_axis: tuple, old_axis=OLD_AXIS):
-    """Return point moved at new axis y"""
-    old_x, old_y = point
-    x_axis, y_axis = new_axis
-
-    x = old_x - x_axis
-    y = old_y - y_axis
 
     return x, y
 

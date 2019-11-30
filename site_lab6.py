@@ -1,31 +1,29 @@
 """
-Movements
+Movements, transformations, etc.
 """
+import math
 import tkinter as tk
-import numpy
 
-from converter import d2s, moved_axis
-from transformations import TRANSFORMATIONS
+from converter import TRANSFORMATIONS
+from figures import Shape
 
 
-FIGURES = [  # ORDER IS IMPORTANT !
-    # [Symmetric, fig_type, color, *points]
+# ORDER IS IMPORTANT!
+SHAPES = [
     # Background
-    [True, 'oval', '#edac7e', 2.4, 11.4, 5, 13],  # Hands
-    [True, 'oval', '#edac7e', 5, 2, 8, 4],  # Legs
-    [True, 'circle', '#87cefa', 7.5, 21, 1.5],  # Ears
+    Shape('oval', [2.4, 11.4, 5, 13], '#edac7e', True),  # Hands
+    Shape('oval', [5, 2, 8, 4], '#edac7e', True),  # Legs
+    Shape('circle', [7.5, 21, 1.5], '#87cefa', True),  # Ears
     # Body
-    [False, 'oval', '#33ccff', 4, 2, 16, 22],  # Body
-    [False, 'oval', '#edac7e', 8, 13, 12, 14.5],  # Mouth
-    [False, 'oval', 'black', 9, 14, 11, 15],  # Nose
+    Shape('oval', [4, 2, 16, 22], '#33ccff', False),  # Body
+    Shape('oval', [8, 13, 12, 14.5], '#edac7e', False),  # Mouth
+    Shape('oval', [9, 14, 11, 15], 'black', False),  # Nose
     # Premier plan
-    [True, 'circle', 'white', 7, 17, 1],  # Eyes
-    [True, 'circle', 'black', 6.5, 17, 0.2],  # Eyebrow
-    [True, 'oval', 'white', 9, 12, 10, 13.5],  # Teeth
+    Shape('circle', [7, 17, 1], 'white', True),  # Eyes
+    Shape('circle', [6.5, 17, 0.2], 'black', True),  # Eyebrow
+    Shape('oval', [9, 12, 10, 13.5], 'white', True),  # Teeth
 ]
-# First quadrant => present as reflected at y
-X_LINE = 0
-Y_LINE = 10
+CENTER = 10
 
 
 CANVAS_SIZE = (720, 480)
@@ -34,54 +32,40 @@ CANVAS_SIZE = (720, 480)
 WIDTH, HEIGHT = CANVAS_SIZE
 
 
-def create_circle(canvas: 'tk.Canvas', x, y, r, color='black'):
-    x0 = x - r
-    y0 = y - r
-    x1 = x + r
-    y1 = y + r
-    p1 = d2s((x0, y0), CANVAS_SIZE)
-    p2 = d2s((x1, y1), CANVAS_SIZE)
-    canvas.create_oval(*p1, *p2, fill=color)
+def draw_image():
+    for shape in SHAPES:
+        # Closure
+        shape.canvas = canvas
+        shape.canvas_size = CANVAS_SIZE
+        # Drawing
+        if shape.is_symmetric:
+            shape.y_axis = CENTER
+        shape.draw()
 
 
-def draw_figure():
-    for fig in FIGURES:
-        is_symmetric = fig[0]
-        figure_type = fig[1]
-        color = fig[2]
-        points = fig[3:]
+def transform_scenario():
+    # Изменение масштаба
+    t = [
+        [2, 0],
+        [0, 2]
+    ]
+    # Симметричное отражение
+    t = TRANSFORMATIONS['rx']
+    # Сдвиг
+    t = [
+        [1, 2],
+        [0, 1]
+    ]
+    # Преобразование поворота
+    t = [
+        [lambda x: math.cos(x), lambda x: math.sin(x)],
+        [lambda x: -math.sin(x), lambda x: math.cos(x)]
+    ]
+    # Масштаб + вращение: через интерфейс
 
-        if figure_type == 'oval':
-            x0, y0 = points[:2]
-            x1, y1 = points[2:]
-            p1 = d2s((x0, y0), CANVAS_SIZE)
-            p2 = d2s((x1, y1), CANVAS_SIZE)
-            canvas.create_oval(*p1, *p2, fill=color)
-            if is_symmetric:
-                x_moved0, y_moved0 = moved_axis(
-                    (x0, y0), (Y_LINE, X_LINE)
-                )
-                x_moved1, y_moved1 = moved_axis(
-                    (x1, y1), (Y_LINE, X_LINE)
-                )
-                moved_matrix = numpy.array(
-                    [
-                        (x_moved0, y_moved0),
-                        (x_moved1, y_moved1)
-                    ]
-                )
-                t = numpy.array(TRANSFORMATIONS['ry'])
-                reflected_matrix = numpy.matmul(moved_matrix, t).tolist()
-                p1, p2 = reflected_matrix
-                p1 = d2s(p1, CANVAS_SIZE)
-                p2 = d2s(p2, CANVAS_SIZE)
-                canvas.create_oval(*p1, *p2, fill=color)
 
-        if figure_type == 'circle':
-            x, y, r = points
-            create_circle(canvas, x, y, r, color)
-
-        # TODO: other shapes
+def apply_transformation(event):
+    pass
 
 
 MASTER = tk.Tk()
@@ -107,12 +91,17 @@ entry_a21 = tk.Entry(fe)  # Entry 21
 entry_a21.grid(row=3, column=0)
 entry_a22 = tk.Entry(fe)  # Entry 22
 entry_a22.grid(row=3, column=1)
+# Button
+button = tk.Button(fe, text='Appliquer')
+button.grid(row=4, column=0, columnspan=2)
+button.bind('<Button-1>', apply_transformation)
 
 # Canvas
 canvas = tk.Canvas(fc, width=WIDTH, height=HEIGHT)
 canvas.pack()
 
-draw_figure()
+draw_image()
 
 
+MASTER.after(1000, transform_scenario)
 MASTER.mainloop()
