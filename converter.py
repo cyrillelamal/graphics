@@ -1,3 +1,6 @@
+import math
+
+
 BASE_SCALE = (8, 8)
 
 
@@ -12,23 +15,24 @@ TRANSFORMATIONS = {
     'rx': [
         (1, 0),
         (0, -1)
+    ],
+    'rotate': [
+        [lambda thi: math.cos(thi), lambda thi: math.sin(thi)],
+        [lambda thi: -math.cos(thi), lambda thi: math.cos(thi)],
     ]
 }
 
 
 def d2s(point: tuple, window_size: tuple, scale=None):
-    """
-    Convert Descartes point to screen point.
-    If number of coordinates in the point not in {2..3}:
-    the point itself is returned.
-    :rtype:
-    """
+    """Convert Descartes point to screen point."""
     if len(point) == 2:
         x, y = point
     elif len(point) == 3:
         x, y, z = point
     else:
         return point
+
+    # TODO: z axis
 
     width, height = window_size
     xscale, yscale = BASE_SCALE if scale is None else scale
@@ -39,7 +43,6 @@ def d2s(point: tuple, window_size: tuple, scale=None):
     y = y_mid - int(y * yscale)
 
     return x, y
-
 
 # def r2s(point):
 #     """

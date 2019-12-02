@@ -2,70 +2,94 @@
 Movements, transformations, etc.
 """
 import math
+import numpy as np
 import tkinter as tk
 
-from converter import TRANSFORMATIONS
-from figures import Shape
+from converter import TRANSFORMATIONS, d2s
 
 
 # ORDER IS IMPORTANT!
-SHAPES = [
-    # Background
-    Shape('oval', [2.4, 11.4, 5, 13], '#edac7e', True),  # Hands
-    Shape('oval', [5, 2, 8, 4], '#edac7e', True),  # Legs
-    Shape('circle', [7.5, 21, 1.5], '#87cefa', True),  # Ears
-    # Body
-    Shape('oval', [4, 2, 16, 22], '#33ccff', False),  # Body
-    Shape('oval', [8, 13, 12, 14.5], '#edac7e', False),  # Mouth
-    Shape('oval', [9, 14, 11, 15], 'black', False),  # Nose
-    # Premier plan
-    Shape('circle', [7, 17, 1], 'white', True),  # Eyes
-    Shape('circle', [6.5, 17, 0.2], 'black', True),  # Eyebrow
-    Shape('oval', [9, 12, 10, 13.5], 'white', True),  # Teeth
+POINTS = [
+    (0, 2),
+    (0, 20),
+    (8, 20),
+    (8, 17),
+    (3, 17),
+    (3, 14),
+    (8, 14),
+    (8, 11),
+    (3, 11),
+    (3, 2)
 ]
-CENTER = 10
+THI = 45
 
 
 CANVAS_SIZE = (720, 480)
+PERIOD = 700
 
 # Counted constants
 WIDTH, HEIGHT = CANVAS_SIZE
 
 
-def draw_image():
-    for shape in SHAPES:
-        # Closure
-        shape.canvas = canvas
-        shape.canvas_size = CANVAS_SIZE
-        # Drawing
-        if shape.is_symmetric:
-            shape.y_axis = CENTER
-        shape.draw()
+def draw_image(points=None):
+    canvas.delete('all')
+
+    points = POINTS if points is None else points
+    num_of_points = len(points)
+
+    for i in range(num_of_points):
+        p1 = points[i]
+        p2 = points[0] if i == num_of_points - 1 else points[i+1]
+        p1 = d2s(p1, CANVAS_SIZE)
+        p2 = d2s(p2, CANVAS_SIZE)
+        canvas.create_line(*p1, *p2)
 
 
-def transform_scenario():
+SCENARIO = [
     # Изменение масштаба
-    t = [
-        [2, 0],
-        [0, 2]
-    ]
+    [
+        [1.5, 0],
+        [0, 1.5]
+    ],
     # Симметричное отражение
-    t = TRANSFORMATIONS['rx']
+    TRANSFORMATIONS['rx'],
     # Сдвиг
-    t = [
+    [
         [1, 2],
         [0, 1]
-    ]
+    ],
     # Преобразование поворота
-    t = [
-        [lambda x: math.cos(x), lambda x: math.sin(x)],
-        [lambda x: -math.sin(x), lambda x: math.cos(x)]
-    ]
-    # Масштаб + вращение: через интерфейс
+    [
+        [math.cos(math.radians(THI)), math.sin(math.radians(THI))],
+        [-math.sin(math.radians(THI)), math.cos(math.radians(THI))],
+    ],
+]
+
+
+def transform_scenario(i=0):
+    """Main script"""
+    if i == len(SCENARIO):
+        return
+    p = np.array(POINTS)
+    t = np.array(SCENARIO[i])
+    new_points = np.matmul(p, t).tolist()
+    draw_image(new_points)
+    canvas.after(PERIOD, transform_scenario, i+1)
 
 
 def apply_transformation(event):
-    pass
+    p = np.array(POINTS)
+
+    thi = entry_angle.get()
+    if thi != '':
+        thi = float(thi)
+        t = TRANSFORMATIONS['rotate']
+
+    # t = [
+    #     [float(entry_a11.get()), float(entry_a12.get())],
+    #     [float(entry_a21.get()), float(entry_a22.get())]
+    # ]
+
 
 
 MASTER = tk.Tk()
@@ -100,8 +124,8 @@ button.bind('<Button-1>', apply_transformation)
 canvas = tk.Canvas(fc, width=WIDTH, height=HEIGHT)
 canvas.pack()
 
-draw_image()
+draw_image()  # Default image
 
 
-MASTER.after(1000, transform_scenario)
+MASTER.after(PERIOD, transform_scenario)
 MASTER.mainloop()

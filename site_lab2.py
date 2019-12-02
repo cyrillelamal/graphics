@@ -7,6 +7,19 @@ import tkinter as tk
 from converter import d2s
 
 
+DIGITS = '0123456789'
+
+DEFAULT_TRIANGLE_LINES = [
+    ((-5, 0), (0, 5)),
+    ((0, 5), (5, -5)),
+    ((5, -5), (-5, 0))
+]
+
+COLORS = ['#000000', '#FF0000', '#0000FF']
+
+WINDOW_SIZE = (400, 400)
+
+
 def draw_default_triangle():
     for line, color in zip(DEFAULT_TRIANGLE_LINES, COLORS):
         pd1, pd2 = line
@@ -33,31 +46,20 @@ def draw(event):
 
 
 def parse_points(string):
-    points = []
-    p = ''
+    nums = []
+    t = ''
     for ch in string:
         if ch in DIGITS:
-            p += ch
-        elif p != '':
-            points.append(int(p))
-            p = ''
-    if p != '':
-        points.append(int(p))
-    return points
+            t += ch
+        elif t != '':
+            nums.append(int(t))
+            t = ''
+    if t != '':
+        nums.append(int(t))
+    return nums
 
 
-DIGITS = '0123456789'
-
-DEFAULT_TRIANGLE_LINES = [
-    ((-5, 0), (0, 5)),
-    ((0, 5), (5, -5)),
-    ((5, -5), (-5, 0))
-]
-
-COLORS = ['#000000', '#FF0000', '#0000FF']
-
-WINDOW_SIZE = (400, 400)
-
+# Counted constants
 WIDTH, HEIGHT = WINDOW_SIZE
 X_MID, Y_MID = (p // 2 for p in WINDOW_SIZE)
 

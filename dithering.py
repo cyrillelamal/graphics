@@ -23,6 +23,7 @@ def fs_dithering(pixels):
                     for old_color, err
                     in zip(pixels[x+1][y], errors)
                 ]
+                print(pixel)
                 pixels[x+1][y] = pixel
 
             if x > 1 and y < height - 1:  # Pixel at South-West
@@ -48,6 +49,8 @@ def fs_dithering(pixels):
                     in zip(pixels[x+1][y+1], errors)
                 ]
                 pixels[x+1][y+1] = pixel
+
+    return pixels
 
 
 def map_threshold(pixel):

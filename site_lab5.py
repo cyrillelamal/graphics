@@ -23,7 +23,7 @@ def build_figure(event):
 
     n = int(entry_n.get())
 
-    angle = PHI + 2 * math.pi * 0 / n
+    angle = PHI
     x0 = RADIUS * math.cos(angle)
     y0 = RADIUS * math.sin(angle)
     p1 = d2s((x0, y0), CANVAS_SIZE, SCALE)

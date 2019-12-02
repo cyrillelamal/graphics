@@ -34,6 +34,7 @@ HEIGHT = 200
 MASTER = tk.Tk()
 MASTER.title('ЛР №1. Косыгин К.С.')
 MASTER.geometry(f'{WIDTH}x{HEIGHT}')
+MASTER.resizable(0, 0)
 
 # Frame
 # Frame with entries
