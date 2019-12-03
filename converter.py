@@ -19,6 +19,14 @@ TRANSFORMATIONS = {
     'rotate': [
         [lambda thi: math.cos(thi), lambda thi: math.sin(thi)],
         [lambda thi: -math.cos(thi), lambda thi: math.cos(thi)],
+    ],
+    'y=x': [
+        [0, 1],
+        [1, 0]
+    ],
+    'y=0': [
+        [1, 0],
+        [1, 0]
     ]
 }
 
