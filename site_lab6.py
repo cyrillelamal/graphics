@@ -29,6 +29,7 @@ PERIOD = 700
 
 # Counted constants
 WIDTH, HEIGHT = CANVAS_SIZE
+RAD_THI = math.radians(THI)
 
 
 def draw_image(points=None):
@@ -60,8 +61,8 @@ SCENARIO = [
     ],
     # Преобразование поворота
     [
-        [math.cos(math.radians(THI)), math.sin(math.radians(THI))],
-        [-math.sin(math.radians(THI)), math.cos(math.radians(THI))],
+        [math.cos(RAD_THI), math.sin(RAD_THI)],
+        [-math.sin(RAD_THI), math.cos(RAD_THI)],
     ],
 ]
 
@@ -83,13 +84,23 @@ def apply_transformation(event):
     thi = entry_angle.get()
     if thi != '':
         thi = float(thi)
-        t = TRANSFORMATIONS['rotate']
+        t = [row.copy() for row in TRANSFORMATIONS.get('rotate')]
 
-    # t = [
-    #     [float(entry_a11.get()), float(entry_a12.get())],
-    #     [float(entry_a21.get()), float(entry_a22.get())]
-    # ]
+        for i in range(len(t)):
+            for j in range(len(t[i])):
+                t[i][j] = t[i][j](thi)
 
+        t = np.array(t)
+
+    else:
+        t = np.array([
+            [float(entry_a11.get()), float(entry_a12.get())],
+            [float(entry_a21.get()), float(entry_a22.get())]
+        ])
+
+    points = np.matmul(p, t).tolist()
+
+    draw_image(points)
 
 
 MASTER = tk.Tk()
