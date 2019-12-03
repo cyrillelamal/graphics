@@ -83,7 +83,7 @@ def apply_transformation(event):
 
     thi = entry_angle.get()
     if thi != '':
-        thi = float(thi)
+        thi = math.radians(float(thi))
         t = [row.copy() for row in TRANSFORMATIONS.get('rotate')]
 
         for i in range(len(t)):
