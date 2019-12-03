@@ -1,3 +1,6 @@
+"""
+Triangles in triangles
+"""
 import tkinter as tk
 
 

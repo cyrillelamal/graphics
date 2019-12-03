@@ -1,3 +1,6 @@
+"""
+Sharp lines
+"""
 import tkinter as tk
 
 

@@ -1,3 +1,6 @@
+"""
+Transform triangle
+"""
 import sys
 import tkinter as tk
 import numpy as np
@@ -67,6 +70,7 @@ fc.pack()
 # Canvas
 canvas = tk.Canvas(fc, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
 canvas.pack()
+draw_triangle()
 
-MASTER.after(0, transform)
+MASTER.after(PERIOD, transform)
 MASTER.mainloop()
