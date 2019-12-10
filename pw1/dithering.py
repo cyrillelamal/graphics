@@ -1,10 +1,7 @@
 def fs_dithering(pixels):
     """Floyd-Steiner dithering. Affect passed pixels"""
-    height = len(pixels) - 1
-
-    for y in range(height):
-        width = len(pixels[y]) - 1
-        for x in range(width):
+    for y in range(len(pixels) - 1):
+        for x in range(len(pixels[y]) - 1):
             old_pixel = pixels[x][y]
             new_pixel = similar_color(old_pixel)
             pixels[x][y] = new_pixel
@@ -29,4 +26,5 @@ if __name__ == '__main__':
         [0, 1, 0],
         [0, 0, 0]
     ]
-    print(fs_dithering(m))
+    print('До:', m)
+    print('После:', fs_dithering(m))

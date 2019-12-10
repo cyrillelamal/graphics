@@ -1,8 +1,6 @@
 import math
 
-
 BASE_SCALE = (8, 8)
-
 
 # Affine transformations matrices
 TRANSFORMATIONS = {
@@ -31,7 +29,7 @@ TRANSFORMATIONS = {
 }
 
 
-def d2s(point: tuple, window_size: tuple, scale=None):
+def d2s(point: tuple, window_size: tuple, scale: tuple = None):
     """Convert Descartes point to screen point."""
     if len(point) == 2:
         x, y = point
