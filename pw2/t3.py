@@ -1,91 +1,40 @@
 import sys
-import tkinter as tk
-
+from math import sin, cos, degrees
+from math import pi as PI
+from tkinter import *
 
 sys.path.insert(0, '..')
 from converter import d2s
 
-NUM_OF_ARROWS = 30
+CS = (600, 600)
+CW, CH = CS
 
-WIDTH = 640
-HEIGHT = 480
-
-X_MID = WIDTH // 2
-Y_MID = HEIGHT // 2
-
-
-def create_circle(x, y, r):
-    x0 = x - r
-    y0 = y - r
-    x1 = x + r
-    y1 = y + r
-    canvas.create_oval(x0, y0, x1, y1)
+R = 15  # Radius
+NOA = 30  # Number of arrows
+XB, YB = (1, 2)  # Arrow biases
+AL = 3  # Arrow length
 
 
-def redraw(event):
-    canvas.delete('all')
+def main():
+    for i in range(0, NOA+1):
+        angle = 2 * PI * i / NOA
+        xi = round(R * cos(angle), 5)
+        yi = round(R * sin(angle), 5)
 
-    users_input = get_users_input()
-    x = users_input.get('x')
-    y = users_input.get('y')
-    r = users_input.get('radius')
+        arrow_point = d2s((xi, yi), CS)
 
-    circle_center = d2s((x, y), (WIDTH, HEIGHT))
-    x, y = circle_center  # Screen points
-    create_circle(x, y, r)
+        a1 = d2s((xi+XB, yi-YB), CS)
+        a2 = d2s((xi-XB, yi-YB), CS)
+        a3 = d2s((xi, yi-AL), CS)
 
-    # Draw arrows
-    xt = x
-    yt = y - r
-    angle = 360 / NUM_OF_ARROWS
-
-
-def get_users_input():
-    re = radius_entry.get()
-    radius = re if re != '' else HEIGHT // 4
-
-    xe = x_entry.get()
-    x = xe if xe != '' else X_MID
-    ye = y_entry.get()
-    y = ye if ye != '' else Y_MID
-
-    return {
-        'x': int(x), 'y': int(y),
-        'radius': int(radius)
-    }
+        canvas.create_line(*arrow_point, *a1)
+        canvas.create_line(*arrow_point, *a2)
+        canvas.create_line(*arrow_point, *a3)
 
 
-MASTER = tk.Tk()
-MASTER.title('СР №1. Задание №3. Косыгин К.С.')
-
-# Entries frame
-fe = tk.Frame(MASTER)
-fe.pack()
-# Canvas frame
-cf = tk.Frame(MASTER)
-cf.pack()
-
-# User's input
-tk.Label(fe, text='Radius').grid(row=0, column=0, columnspan=2, padx=3, pady=5)
-radius_entry = tk.Entry(fe)
-radius_entry.grid(row=0, column=2, columnspan=2, padx=3, pady=5)
-
-tk.Label(fe, text='x').grid(row=1, column=0, padx=3, pady=5)
-x_entry = tk.Entry(fe)
-x_entry.grid(row=1, column=1, padx=3, pady=5)
-
-tk.Label(fe, text='y').grid(row=1, column=2, padx=3, pady=5)
-y_entry = tk.Entry(fe)
-y_entry.grid(row=1, column=3, padx=3, pady=5)
-
-button_redraw = tk.Button(fe, text='Dessiner')
-button_redraw.grid(row=2, column=1, columnspan=2)
-button_redraw.bind('<Button-1>', redraw)
-
-# Canvas
-cf = tk.Frame(MASTER)
-cf.pack()
-canvas = tk.Canvas(cf, width=WIDTH, height=HEIGHT)
+master = Tk()
+master.title('ВСР №3. Косыгин К.С.')
+canvas = Canvas(master, width=CW, height=CH)
 canvas.pack()
-
-MASTER.mainloop()
+master.after(0, main)
+master.mainloop()
