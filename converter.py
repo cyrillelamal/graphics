@@ -29,7 +29,7 @@ TRANSFORMATIONS = {
 }
 
 
-def d2s(point: tuple, window_size: tuple, scale: tuple = None):
+def d2s(point: [tuple, list], window_size: tuple, scale: tuple = None):
     """Convert Descartes point to screen point."""
     if len(point) == 2:
         x, y = point
@@ -49,6 +49,15 @@ def d2s(point: tuple, window_size: tuple, scale: tuple = None):
     y = y_mid - int(y * yscale)
 
     return x, y
+
+
+def fig2s(points: [list, tuple], window_size, scale=BASE_SCALE):
+    """Transform list of points to raw integers acceptable by create* methods"""
+    fig_points = []
+    for p in points:
+        fig_points += [*d2s(p, window_size, scale)]
+    return fig_points
+
 
 # def r2s(point):
 #     """

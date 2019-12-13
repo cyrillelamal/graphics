@@ -4,61 +4,101 @@ Animation with reflections
 import tkinter as tk
 import numpy as np
 
-from converter import d2s
+from converter import d2s, fig2s
 from converter import TRANSFORMATIONS as TR
 
-SCALE = (10, 10)
-CS = (600, 600)  # Canvas size
-W, H = CS  # Width and height
+
+# Unit matrix
+UNIT_MATRIX = np.array([
+    [1, 0],
+    [0, 1]
+])
+# Matrix reflect at y-axis
+TRY = np.array(TR['ry'])
 
 
-FIGURES = [  # ORDER IS IMPORTANT !
-    # [Symmetric, fig_type, color, *points]
+class Figure:
+    def __init__(self, symmetric, type_, points, color, animated=False, t=None):
+        self.symmetric = symmetric
+        self.type = type_
+        self.points = points
+        self.color = color
+        self.animated = animated
+        self.t = t
+
+    def switch(self):
+        if self.animated:
+            # switch biases
+            self.t = [-axis for axis in self.t]
+            self.points = [
+                [axis + bias for axis, bias in zip(row, self.t)]
+                for row in self.points
+            ]
+            # t = [[(lambda a: -a if a != 1 else a)(axis) for axis in row] for row in t]
+
+
+# Image
+# ORDER IS IMPORTANT!
+FIGURES = [
     # Background
-    [True, 'oval', '#c48157', 1, -15.5, 13, -10],  # Legs
-    [True, 'oval', '#c48157', 2.5, -2.5, 18, 4],  # Hands
-    [True, 'oval', '#84d3db', 2, 18.5, 10, 11],  # Ears
+    Figure(True, 'oval', [[1, -15.5], [13, -10]], '#c48157'),  # Legs
+    Figure(False, 'line', [[17, 0], [17, 10]], 'black', True, [0, 0.8]),  # Rope
+    Figure(False, 'oval', [[14, 9], [20, 14]], 'red', True, [0, 0.5]),  # Balloon
+    Figure(True, 'oval', [[2.5, -2.5], [18, 4]], '#c48157', True, [0, 0.8]),  # Hands
+    Figure(True, 'oval', [[2, 18.5], [10, 11]], '#84d3db'),  # Ears
     # Front
-    [False, 'oval', '#84d3db', -10, -15, 10, 15],  # Body
-    [True, 'oval', 'white', 0.5, 8, 2, 3],  # Teeth
-    [False, 'oval', '#c9996c', -3, 8, 3, 5],  # Mouth
-    [False, 'oval', 'black', -2, 9, 2, 7],  # Nose
-    [True, 'oval', 'white', 0.5, 10, 4, 13.5],  # Eyes
-    [True, 'oval', 'black', 1, 11, 1.5, 11.5],  # Eyebrows
+    Figure(True, 'oval', [[-10, -15], [10, 15]], '#84d3db'),  # Body
+    Figure(True, 'oval', [[0.5, 8], [2, 3]], 'white'),  # Teeth
+    Figure(True, 'oval', [[-3, 8], [3, 5]], '#c9996c'),  # mouth
+    Figure(True, 'oval', [[-2, 9], [2, 7]], 'black'),  # Nose
+    Figure(True, 'oval', [[0.5, 10], [4, 13.5]], 'white'),  # Eyes
+    Figure(True, 'oval', [[1, 11], [1.5, 11.5]], 'black', True, [-0.5, 0]),  # Eyebrows
 ]
 
 
-# Main functions
-def draw_figure():
-    for fig in FIGURES:
-        is_symmetric = fig[0]
-        fig_type = fig[1]
-        color = fig[2]
-        points = fig[3:]
+def main():
+    def draw():
+        canvas.delete('all')
 
-        if fig_type == 'oval':
-            x0, y0 = points[:2]
-            x1, y1 = points[2:]
-            p1 = d2s((x0, y0), CS)
-            p2 = d2s((x1, y1), CS)
-            canvas.create_oval(*p1, *p2, fill=color)
-            if is_symmetric:
-                m = np.array([
-                    [x0, y0],
-                    [x1, y1]
-                ])
-                t = np.array(TR['ry'])
-                reflected_matrix = np.matmul(m, t).tolist()
-                p1, p2 = reflected_matrix
-                p1 = d2s(p1, CS)
-                p2 = d2s(p2, CS)
-                canvas.create_oval(*p1, *p2, fill=color)
+        for fig in FIGURES:
+            method = getattr(canvas, f'create_{fig.type}')
+
+            m = np.array(fig.points)
+            t = UNIT_MATRIX
+
+            # Move figure before reflect and operate it
+            # Else unit matrix will be used
+            if fig.animated:
+                fig.switch()
+
+            transformed = np.matmul(m, t)
+            method(*fig2s(transformed), fill=fig.color)
+
+            # Draw again maybe reflected
+            if fig.symmetric:
+                t = TRY  # Reflect at y
+
+                transformed = np.matmul(m, t)
+                method(*fig2s(transformed), fill=fig.color)
+
+        canvas.after(500, draw)
+
+    draw()
 
 
 # Tkinter backend
+def d2s_closure(old_func=d2s):
+    def new_func(point: [list, tuple]):
+        return old_func(point, (600, 600), (10, 10))
+    return new_func
+
+
+# Enclose d2s with constants
+d2s = d2s_closure(d2s)
+fig2s = d2s_closure(fig2s)
 master = tk.Tk()
 master.title('Косыгин К.С.')
-canvas = tk.Canvas(master, width=W, height=H)
+canvas = tk.Canvas(master, width=600, height=600)
 canvas.pack()
-master.after(0, draw_figure)
+master.after(0, main)
 master.mainloop()
